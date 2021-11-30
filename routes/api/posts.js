@@ -129,4 +129,38 @@ router.put("/like/:id", auth, async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+// @route   Delete api/posts/like/:id
+// @desc    remove a like from post by postID
+// @access  private ( need to be authenticated with Token to view all posts )
+router.put("/unlike/:id", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    //Check if the post was already liked by this user
+    if (
+      post.likes.filter((like) => like.user.toString() === req.user.id)
+        .length == 0
+    ) {
+      return res.status(400).json({ msg: "Post not yet been liked" });
+    }
+
+    // Get remove index
+    const removeIndex = post.likes
+      .map((like) => like.user.toString())
+      .indexOf(req.user.id);
+
+    post.likes.splice(removeIndex, 1);
+    await post.save();
+
+    res.json(post.likes);
+  } catch (error) {
+    console.error(err.message);
+    // Must have correct formatted object id
+    if (err.kind === "ObjectId") {
+      return res.status(404).json({ msg: "Posts not found" });
+    }
+    res.status(500).send("Server error");
+  }
+});
 module.exports = router;
