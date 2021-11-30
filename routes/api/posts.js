@@ -6,11 +6,11 @@ const auth = require("../../middleware/auth");
 const User = require("../../models/User");
 const Post = require("../../models/Posts");
 const Profile = require("../../models/Profile");
+const Posts = require("../../models/Posts");
 
 // @route   POST api/posts
 // @desc    Create a post
 // @access  private ( need to be authenticated with Token )
-
 router.post(
   "/",
   [auth, [check("text", "Post must contain Text").not().isEmpty()]],
@@ -36,5 +36,39 @@ router.post(
     }
   }
 );
+
+// @route   GET api/posts
+// @desc    Get all posts
+// @access  private ( need to be authenticated with Token to view all posts )
+router.get("/", auth, async (req, res) => {
+  try {
+    const posts = await Posts.find().sort({ date: -1 });
+    res.json(posts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+// @route   GET api/posts/:id
+// @desc    Get all posts
+// @access  private ( need to be authenticated with Token to view all posts )
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const posts = await Posts.findById(req.params.id);
+    // Check if that id even has any posts
+    if (!posts) {
+      return res.status(404).json({ msg: "Posts not found" });
+    }
+    res.json(posts);
+  } catch (err) {
+    console.error(err.message);
+    // Must have correct formatted object id
+    if (err.kind === "ObjectId") {
+      return res.status(404).json({ msg: "Posts not found" });
+    }
+    res.status(500).send("Server error");
+  }
+});
 
 module.exports = router;
