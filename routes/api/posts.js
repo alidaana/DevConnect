@@ -71,4 +71,33 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+// @route   DELETE api/posts/:id
+// @desc    Delete all post by postID
+// @access  private ( need to be authenticated with Token to view all posts )
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const post = await Posts.findById(req.params.id);
+
+    // Must have correct formatted object id
+    if (!post) {
+      return res.status(404).json({ msg: "Posts not found" });
+    }
+    // Check if the user deleting the post is the owner of the post
+    if (post.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: "User not autherized" });
+    }
+
+    await post.remove();
+
+    res.json({ msg: "Post removed" });
+  } catch (err) {
+    console.error(err.message);
+    // Must have correct formatted object id
+    if (err.kind === "ObjectId") {
+      return res.status(404).json({ msg: "Posts not found" });
+    }
+    res.status(500).send("Server error");
+  }
+});
+
 module.exports = router;
