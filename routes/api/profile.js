@@ -139,4 +139,22 @@ router.get("/user/:user_id", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+// @route   DELETE api/profile
+// @desc    Delete profile, user and posts
+// @access  private
+router.delete("/", auth, async (req, res) => {
+  try {
+    // remove the profile
+    await Profile.findOneAndRemove({ user: req.user.id });
+    // remove the user
+    await User.findOneAndRemove({ _id: req.user.id });
+
+    res.json({ msg: "User removed" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 module.exports = router;
