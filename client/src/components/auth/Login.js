@@ -26,10 +26,10 @@ const Login = ({ login, isAuthenticated }) => {
 
   // Redirect if login successful
   if (isAuthenticated) {
-    console.log("sdkjskdjksjdksdj");
+    console.log(isAuthenticated);
     return (
       <Routes>
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route exact path="/dashboard" />
       </Routes>
     );
   }
